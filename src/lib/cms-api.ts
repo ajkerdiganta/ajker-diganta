@@ -32,7 +32,8 @@ export function hasTrustedMutationOrigin(request: Request) {
   if (!origin) return false;
   try {
     const supplied = new URL(origin).origin;
-    const trusted = [env.BETTER_AUTH_URL, env.PUBLIC_SITE_URL, ...env.ADDITIONAL_TRUSTED_ORIGINS]
+    const localTrustedOrigins = env.NODE_ENV === "development" ? ["http://localhost:3000", "http://127.0.0.1:3000"] : [];
+    const trusted = [env.BETTER_AUTH_URL, env.PUBLIC_SITE_URL, ...env.ADDITIONAL_TRUSTED_ORIGINS, ...localTrustedOrigins]
       .filter((value): value is string => typeof value === "string" && value.length > 0)
       .map((value) => new URL(value).origin);
     return trusted.includes(supplied);

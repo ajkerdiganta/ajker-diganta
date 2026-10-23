@@ -9,6 +9,7 @@ import { z } from "zod";
 const authOrigin = new URL(env.BETTER_AUTH_URL);
 const usesSecureCookies = authOrigin.protocol === "https:";
 const isManusPreview = authOrigin.hostname.endsWith(".manus.computer");
+const localTrustedOrigins = env.NODE_ENV === "development" ? ["http://localhost:3000", "http://127.0.0.1:3000"] : [];
 
 const argonOptions = {
   algorithm: 2,
@@ -21,7 +22,7 @@ export const auth = betterAuth({
   appName: "দৈনিক আজকের দিগন্ত",
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: [env.BETTER_AUTH_URL, ...env.ADDITIONAL_TRUSTED_ORIGINS],
+  trustedOrigins: [env.BETTER_AUTH_URL, ...env.ADDITIONAL_TRUSTED_ORIGINS, ...localTrustedOrigins],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   user: {
     additionalFields: {
