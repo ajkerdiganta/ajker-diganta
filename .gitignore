@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.open-next/
 /out/
 
 # production
@@ -73,4 +74,5 @@ id_ecdsa
 
 # typescript
 *.tsbuildinfo
+cloudflare-env.d.ts
 next-env.d.ts
