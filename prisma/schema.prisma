@@ -68,6 +68,19 @@ enum SubscriptionPlan {
   YEARLY
 }
 
+enum SubscriptionPackageCategory {
+  NEWSPAPER
+  MAGAZINE
+  KNOWLEDGE
+  GUIDEBOOK
+}
+
+enum PublicationIssueStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum SubscriptionStatus {
   PENDING
   ACTIVE
@@ -196,6 +209,8 @@ model user {
   contactSubmissionsResolved ContactSubmission[]     @relation("ContactSubmissionResolver")
   footerSubmissionsResolved  FooterSubmission[]      @relation("FooterSubmissionResolver")
   subscriptions              Subscription[]          @relation("Subscriber")
+  subscriptionPackagesUpdated SubscriptionPackage[] @relation("SubscriptionPackageUpdater")
+  publicationIssuesUpdated   PublicationIssue[]     @relation("PublicationIssueUpdater")
   paymentSubmissions         PaymentSubmission[]     @relation("PaymentSubmitter")
   paymentVerifications       PaymentSubmission[]     @relation("PaymentVerifier")
   paymentGatewaySettings     PaymentGatewaySetting[] @relation("PaymentGatewayUpdater")
@@ -962,7 +977,9 @@ model FooterSubmission {
 model Subscription {
   id                String             @id @default(uuid()) @db.Uuid
   userId            String             @db.Uuid
+  packageId         String?            @db.Uuid
   plan              SubscriptionPlan
+  durationDays      Int?
   amountBdt         Int
   status            SubscriptionStatus @default(PENDING)
   startedAt         DateTime?          @db.Timestamptz(3)
@@ -970,11 +987,62 @@ model Subscription {
   createdAt         DateTime           @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
   user              user               @relation("Subscriber", fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionPackage SubscriptionPackage? @relation(fields: [packageId], references: [id], onDelete: Restrict)
   paymentSubmission PaymentSubmission?
 
   @@index([userId, status, expiresAt])
+  @@index([packageId, status, createdAt])
   @@index([status, createdAt])
   @@map("subscriptions")
+}
+
+model SubscriptionPackage {
+  id              String                      @id @default(uuid()) @db.Uuid
+  code            String                      @unique @db.VarChar(80)
+  category        SubscriptionPackageCategory
+  title           String                      @db.VarChar(120)
+  description     String                      @db.Text
+  durationLabel   String                      @db.VarChar(40)
+  durationMonths  Int?
+  durationDays    Int
+  benefits        String                      @db.Text
+  terms           String                      @db.Text
+  priceBdt        Int
+  isActive        Boolean                     @default(true)
+  sortOrder       Int                         @default(0)
+  createdAt       DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime                    @updatedAt @db.Timestamptz(3)
+  updatedById     String?                     @db.Uuid
+  updatedBy       user?                       @relation("SubscriptionPackageUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  subscriptions   Subscription[]
+  issues          PublicationIssue[]
+
+  @@index([category, isActive, sortOrder])
+  @@map("subscription_packages")
+}
+
+model PublicationIssue {
+  id                String                @id @default(uuid()) @db.Uuid
+  packageId         String                @db.Uuid
+  caption           String                @db.VarChar(120)
+  issueTitle        String                @db.VarChar(180)
+  publicationMonth  Int                   @db.SmallInt
+  publicationYear   Int
+  releaseDate       DateTime?             @db.Timestamptz(3)
+  subjectSummary   String                @db.Text
+  editorName        String?               @db.VarChar(120)
+  publisherName     String?               @db.VarChar(120)
+  coverImageUrl     String?               @db.VarChar(1000)
+  status            PublicationIssueStatus @default(DRAFT)
+  description       String?               @db.Text
+  createdAt         DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime              @updatedAt @db.Timestamptz(3)
+  updatedById       String?               @db.Uuid
+  subscriptionPackage SubscriptionPackage  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  updatedBy         user?                 @relation("PublicationIssueUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([packageId, status, publicationYear, publicationMonth])
+  @@map("publication_issues")
 }
 
 model PaymentGatewaySetting {

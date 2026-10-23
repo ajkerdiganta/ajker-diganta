@@ -1,12 +1,90 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { auditCms } from "@/lib/cms-audit";
-import { SUBSCRIPTION_PLANS, type PaymentSubmissionInput, type PaymentGatewaySettingsInput } from "@/lib/subscription-schemas";
+import { SUBSCRIPTION_PLANS, type PaymentSubmissionInput, type PaymentGatewaySettingsInput, type PublicationIssueInput, type SubscriptionPackageInput } from "@/lib/subscription-schemas";
 import { decryptPaymentField, encryptPaymentField, paymentTransactionHash } from "@/lib/payment-pii";
 
 export async function getPublicPaymentGateways() {
   const rows = await prisma.paymentGatewaySetting.findMany({ where: { isActive: true, accountNumber: { not: "" } }, orderBy: { method: "asc" }, select: { method: true, displayName: true, accountNumber: true, transferType: true, instructions: true } });
   return rows;
+}
+
+function mapBenefits(value: string) {
+  return value.split("\n").map((item) => item.trim()).filter(Boolean);
+}
+
+export async function getPublicSubscriptionPackages() {
+  const rows = await prisma.subscriptionPackage.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true, code: true, category: true, title: true, description: true,
+      durationLabel: true, durationMonths: true, durationDays: true, benefits: true,
+      terms: true,
+      issues: {
+        where: { status: "PUBLISHED" },
+        orderBy: [{ publicationYear: "desc" }, { publicationMonth: "desc" }],
+        select: { id: true, caption: true, issueTitle: true, publicationMonth: true, publicationYear: true, releaseDate: true, subjectSummary: true, editorName: true, publisherName: true, coverImageUrl: true, description: true },
+      },
+    },
+  });
+  return rows.map(({ benefits, ...row }) => ({ ...row, benefits: mapBenefits(benefits) }));
+}
+
+export async function getSubscriptionPackageForCustomer(id: string) {
+  const row = await prisma.subscriptionPackage.findFirst({
+    where: { id, isActive: true },
+    include: { issues: { where: { status: "PUBLISHED" }, orderBy: [{ publicationYear: "desc" }, { publicationMonth: "desc" }] } },
+  });
+  if (!row) return null;
+  return { ...row, benefits: mapBenefits(row.benefits) };
+}
+
+export async function getAdminSubscriptionCatalog() {
+  return prisma.subscriptionPackage.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: { issues: { orderBy: [{ publicationYear: "desc" }, { publicationMonth: "desc" }] } },
+  });
+}
+
+export async function upsertSubscriptionPackage(input: SubscriptionPackageInput, adminId: string) {
+  const data = {
+    code: input.code,
+    category: input.category,
+    title: input.title,
+    description: input.description,
+    durationLabel: input.durationLabel,
+    durationMonths: input.durationMonths ?? null,
+    durationDays: input.durationDays,
+    benefits: input.benefits,
+    terms: input.terms,
+    priceBdt: input.priceBdt,
+    isActive: input.isActive,
+    sortOrder: input.sortOrder,
+    updatedById: adminId,
+  };
+  if (input.id) return prisma.subscriptionPackage.update({ where: { id: input.id }, data });
+  return prisma.subscriptionPackage.create({ data });
+}
+
+export async function upsertPublicationIssue(input: PublicationIssueInput, adminId: string) {
+  const data = {
+    packageId: input.packageId,
+    caption: input.caption,
+    issueTitle: input.issueTitle,
+    publicationMonth: input.publicationMonth,
+    publicationYear: input.publicationYear,
+    releaseDate: input.releaseDate ? new Date(input.releaseDate) : null,
+    subjectSummary: input.subjectSummary,
+    editorName: input.editorName || null,
+    publisherName: input.publisherName || null,
+    coverImageUrl: input.coverImageUrl || null,
+    status: input.status,
+    description: input.description || null,
+    updatedById: adminId,
+  };
+  if (input.id) return prisma.publicationIssue.update({ where: { id: input.id }, data });
+  return prisma.publicationIssue.create({ data });
 }
 
 export async function getSubscriptionStatus(userId: string) {
@@ -46,11 +124,16 @@ export async function submitManualPayment(userId: string, input: PaymentSubmissi
       const duplicate = await tx.paymentSubmission.findUnique({ where: { method_transactionIdHash: { method: input.method, transactionIdHash } }, select: { id: true } });
       if (duplicate) return { kind: "duplicate-transaction" as const };
 
-      const plan = SUBSCRIPTION_PLANS[input.plan];
-      const subscription = await tx.subscription.create({ data: { userId, plan: input.plan, amountBdt: plan.amountBdt, status: "PENDING" } });
+      const selectedPackage = input.packageId ? await tx.subscriptionPackage.findFirst({ where: { id: input.packageId, isActive: true }, select: { id: true, priceBdt: true, durationDays: true } }) : null;
+      if (input.packageId && !selectedPackage) return { kind: "package-unavailable" as const };
+      const legacyPlan = input.plan ? SUBSCRIPTION_PLANS[input.plan] : null;
+      const amountBdt = selectedPackage?.priceBdt ?? legacyPlan?.amountBdt;
+      const durationDays = selectedPackage?.durationDays ?? legacyPlan?.durationDays;
+      if (amountBdt === undefined || durationDays === undefined) return { kind: "package-unavailable" as const };
+      const subscription = await tx.subscription.create({ data: { userId, packageId: selectedPackage?.id, plan: input.plan ?? "MONTHLY", durationDays, amountBdt, status: "PENDING" } });
       const payment = await tx.paymentSubmission.create({
         data: {
-          userId, subscriptionId: subscription.id, method: input.method, amountBdt: plan.amountBdt,
+          userId, subscriptionId: subscription.id, method: input.method, amountBdt,
           customerNameEncrypted: encryptPaymentField(input.customerName), phoneEncrypted: encryptPaymentField(input.phone),
           emailEncrypted: encryptPaymentField(user.email), addressEncrypted: encryptPaymentField(input.address),
           transactionIdEncrypted: encryptPaymentField(input.transactionId), transactionIdHash,
@@ -163,7 +246,7 @@ export async function verifyManualPayment(paymentId: string, adminId: string, ap
       const active = await tx.subscription.findFirst({ where: { userId: submission.userId, status: "ACTIVE", expiresAt: { gt: now } }, select: { id: true } });
       if (active) return { kind: "active-exists" as const };
       await tx.subscription.updateMany({ where: { userId: submission.userId, status: "ACTIVE" }, data: { status: "EXPIRED" } });
-      const duration = SUBSCRIPTION_PLANS[submission.subscription.plan].durationDays;
+      const duration = submission.subscription.durationDays ?? SUBSCRIPTION_PLANS[submission.subscription.plan].durationDays;
       const expiresAt = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
       await tx.subscription.update({ where: { id: submission.subscriptionId }, data: { status: "ACTIVE", startedAt: now, expiresAt } });
       const payment = await tx.paymentSubmission.update({ where: { id: paymentId, status: "PENDING" }, data: { status: "VERIFIED", verifiedAt: now, verifiedById: adminId }, select: { id: true, status: true, verifiedAt: true } });

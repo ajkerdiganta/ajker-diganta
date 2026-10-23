@@ -4,7 +4,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PERMISSION_CATALOG, ROLE_NAMES, ROLE_PERMISSION_CODES, type PermissionCode } from "../src/lib/permissions";
 import type { NavigationMenuLocation, RoleCode } from "../src/generated/prisma/enums";
 import { DEFAULT_SITE_PAGES, DEFAULT_SITE_SETTINGS } from "../src/lib/site-content-defaults";
-import { DEFAULT_PAYMENT_GATEWAYS } from "../src/lib/subscription-schemas";
+import { DEFAULT_PAYMENT_GATEWAYS, DEFAULT_SUBSCRIPTION_PACKAGES } from "../src/lib/subscription-schemas";
 import { asciiSlug } from "../src/lib/slug";
 
 const databaseUrl = process.env.NODE_ENV === "production"
@@ -176,6 +176,9 @@ async function main() {
   await prisma.siteSetting.upsert({ where: { id: "global" }, update: {}, create: { id: "global", companyLinks: DEFAULT_SITE_SETTINGS.companyLinks } });
   for (const gateway of DEFAULT_PAYMENT_GATEWAYS) {
     await prisma.paymentGatewaySetting.upsert({ where: { method: gateway.method }, update: {}, create: gateway });
+  }
+  for (const subscriptionPackage of DEFAULT_SUBSCRIPTION_PACKAGES) {
+    await prisma.subscriptionPackage.upsert({ where: { code: subscriptionPackage.code }, update: {}, create: subscriptionPackage });
   }
 }
 

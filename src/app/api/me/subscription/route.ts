@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     if (result.kind === "gateway-unavailable") return jsonError("এই পেমেন্ট পদ্ধতি এখন চালু নয়", 409);
     if (result.kind === "already-active") return jsonError("আপনার একটি সক্রিয় সাবস্ক্রিপশন আছে", 409);
     if (result.kind === "pending-exists") return jsonError("আপনার একটি অপেক্ষমাণ পেমেন্ট অনুরোধ আছে", 409);
+    if (result.kind === "package-unavailable") return jsonError("এই প্যাকেজটি এখন আবেদনযোগ্য নয়", 409);
     return jsonError("এই transaction ID আগে জমা হয়েছে", 409);
   } catch { return jsonError("পেমেন্ট অনুরোধ সংরক্ষণ করা যায়নি", 503); }
 }
