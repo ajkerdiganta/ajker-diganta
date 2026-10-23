@@ -1,0 +1,441 @@
+You are the lead software architect for the Bengali digital news platform "দৈনিক আজকের দিগন্ত".
+
+I have provided the complete Master PRD above.
+
+IMPORTANT:
+Do NOT start implementing the application yet.
+
+First analyze the entire PRD and prepare a production-oriented technical architecture for a Bengali-first Bangladesh news platform.
+
+Project identity:
+
+Project Name:
+দৈনিক আজকের দিগন্ত
+
+English Identifier:
+Ajker Diganta
+
+Primary Language:
+Bengali (বাংলা)
+
+Target Market:
+Bangladesh
+
+Timezone:
+Asia/Dhaka
+
+Locale:
+bn-BD
+
+The platform must be designed as a Bengali-first digital newspaper and video platform.
+
+Provide:
+
+1. Overall system architecture
+2. Frontend architecture
+3. Backend/API architecture
+4. PostgreSQL database architecture
+5. Complete database entity relationship design
+6. Prisma schema proposal
+7. Authentication architecture
+8. RBAC architecture
+9. Admin/CMS architecture
+10. User dashboard architecture
+11. News article publishing workflow
+12. Video architecture
+13. Save/Favourite/Follow architecture
+14. Notification architecture
+15. Search architecture
+16. Bengali-language search architecture
+17. Media storage architecture
+18. SEO architecture
+19. Bengali SEO architecture
+20. Security architecture
+21. Audit logging architecture
+22. Analytics architecture
+23. Deployment architecture
+24. Folder/file structure
+25. Environment variables
+26. Development phases
+27. Potential technical risks
+28. Infrastructure requirements
+29. Backup and disaster recovery strategy
+
+TECHNOLOGY REQUIREMENTS:
+
+Use:
+
+Next.js
+TypeScript
+Tailwind CSS
+PostgreSQL
+Prisma ORM
+
+Use Cloudflare/R2-compatible object storage architecture.
+
+Do not introduce unnecessary microservices.
+
+Do not add Redis, Elasticsearch, Kafka or Kubernetes unless there is a demonstrated technical requirement.
+
+MVP must remain simple, cost-efficient and maintainable.
+
+Architecture must remain scalable and API-ready so that Android/iOS applications can be developed later.
+
+AUTHENTICATION:
+
+Authentication and authorization must be secure.
+
+Support:
+
+Registration
+Login
+Logout
+Password reset
+Session management
+RBAC
+
+DATABASE:
+
+Design all major models and explain their relationships.
+
+Include appropriate:
+
+Primary keys
+Foreign keys
+Unique constraints
+Indexes
+Composite indexes
+Cascade/restrict behavior
+Soft-delete strategy where appropriate
+Created/updated timestamps
+Audit fields
+
+NEWSROOM:
+
+Design for:
+
+Categories
+Subcategories
+Tags
+Authors
+Reporters
+Editors
+Articles
+Article revisions
+Article status
+Featured image
+Media
+Related articles
+Related videos
+Breaking news
+Featured content
+Trending content
+Scheduled publishing
+Archive
+
+Publishing workflow:
+
+DRAFT
+→ SUBMITTED
+→ UNDER_REVIEW
+→ APPROVED
+→ SCHEDULED
+→ PUBLISHED
+
+Rejected workflow:
+
+REJECTED
+→ REPORTER EDIT
+→ RESUBMIT
+
+VIDEO:
+
+Design the video architecture for external providers such as YouTube.
+
+The architecture must allow Cloudflare Stream or another video provider to be added later without redesigning the entire database.
+
+USER FEATURES:
+
+Separate database relationships must exist for:
+
+Saved articles
+Favourite articles
+Followed topics
+Followed categories
+Reading history
+User preferences
+
+Do NOT combine Save and Favourite into one field.
+
+NOTIFICATIONS:
+
+Support:
+
+Breaking News
+Topic notifications
+Video notifications
+System notifications
+
+Include notification preferences and deduplication.
+
+SEARCH:
+
+Use PostgreSQL search for MVP.
+
+The architecture must support Bengali Unicode search.
+
+Consider:
+
+বাংলা Unicode normalization
+Bengali words
+Bengali punctuation
+Mixed Bengali/English queries
+Partial keyword search
+Article search
+Video search
+Author search
+Category search
+Tag search
+
+Do not introduce Elasticsearch/OpenSearch/Meilisearch unless PostgreSQL search is demonstrably insufficient.
+
+SEO:
+
+Design for Bengali-language SEO.
+
+Support:
+
+Bengali titles
+Bengali descriptions
+Bengali keywords where appropriate
+Unicode URLs where technically appropriate
+SEO-friendly slugs
+Canonical URLs
+OpenGraph
+Twitter/X metadata
+NewsArticle structured data
+Breadcrumb structured data
+Sitemap
+Robots.txt
+RSS/News feed architecture where appropriate
+
+IMPORTANT:
+
+Evaluate whether Bengali Unicode URLs or transliterated slugs should be used.
+
+Recommend one approach and explain the technical trade-offs.
+
+TYPOGRAPHY:
+
+Architecture should support Bengali fonts and proper rendering across:
+
+Desktop
+Android
+iOS
+Mobile browsers
+
+Consider using web fonts such as:
+
+Noto Sans Bengali
+Noto Serif Bengali
+
+Do not hard-code a font provider if self-hosting is preferable for performance/privacy.
+
+CONTENT EDITOR:
+
+The CMS editor must correctly support:
+
+বাংলা text
+English text
+Mixed Bengali-English text
+Headlines
+Subheadings
+Quotes
+Lists
+Links
+Images
+Captions
+Embeds
+YouTube videos
+Tables where appropriate
+
+SECURITY:
+
+Use server-side authorization.
+
+Do not rely on frontend buttons for security.
+
+Consider:
+
+OWASP Top 10
+IDOR
+XSS
+CSRF
+SQL Injection
+SSRF
+File upload security
+Path traversal
+Session security
+Brute-force protection
+Rate limiting
+Security headers
+CORS
+Input validation
+Output sanitization
+Secret management
+Admin security
+
+MEDIA:
+
+Design secure media uploads using R2-compatible object storage.
+
+Consider:
+
+Image validation
+MIME validation
+File size limits
+Filename sanitization
+Object key generation
+Private/public buckets
+Signed URLs where necessary
+Image transformations
+Thumbnail generation
+
+BANGLADESH-SPECIFIC REQUIREMENTS:
+
+Use Asia/Dhaka timezone.
+
+Design dates and times so that:
+
+Database timestamps remain reliable and timezone-safe.
+
+User-facing dates can be rendered in Bengali locale.
+
+Consider Bengali numerals as an optional presentation layer.
+
+Example:
+
+২৬ সেপ্টেম্বর ২০২৬
+
+The underlying database must NOT store localized Bengali date strings as the canonical timestamp.
+
+Also consider:
+
+Bangladesh phone numbers
+Bangladesh-focused news categories
+Bangladesh administrative/geographic taxonomy where useful
+
+Do not over-engineer geographic taxonomy without a product requirement.
+
+ADMIN:
+
+Design roles such as:
+
+SUPER_ADMIN
+ADMIN
+EDITOR
+REPORTER
+AUTHOR
+USER
+
+Explain permissions for each role.
+
+AUDIT LOGGING:
+
+Record important administrative actions including:
+
+Login
+Logout
+Article creation
+Article editing
+Article approval
+Article rejection
+Article publishing
+Article deletion
+User role changes
+Media uploads
+Category changes
+Settings changes
+
+Do not log passwords, tokens or sensitive credentials.
+
+ANALYTICS:
+
+Design MVP analytics for:
+
+Article views
+Video views
+Popular articles
+Popular videos
+Popular categories
+User registrations
+Saved articles
+Favourite articles
+
+Do not build an enterprise analytics system.
+
+PERFORMANCE:
+
+Optimize for:
+
+Bangladesh mobile users
+Mobile-first browsing
+Low-to-medium bandwidth
+Fast first load
+SEO
+Core Web Vitals
+Server-side rendering
+Caching
+Optimized images
+
+Do not introduce Redis or another caching system unless there is a demonstrated need.
+
+API:
+
+The architecture must be API-ready.
+
+Explain how the same backend can later support:
+
+Web
+Android
+iOS
+Third-party integrations
+
+FOLDER STRUCTURE:
+
+Provide a complete recommended folder/file structure and explain the purpose of important directories.
+
+ENVIRONMENT:
+
+Provide all required environment variables.
+
+DEPLOYMENT:
+
+Design a practical deployment architecture using:
+
+Next.js
+PostgreSQL
+Cloudflare
+R2-compatible object storage
+
+Explain what should run where.
+
+IMPORTANT CONSTRAINT:
+
+Do not write the full application code.
+
+Do not implement anything yet.
+
+Finish by presenting:
+
+1. Recommended architecture
+2. ERD
+3. Prisma schema proposal
+4. Folder structure
+5. Security model
+6. Deployment model
+7. Development phases
+8. Technical risks
+9. Recommended implementation order
+
+Then STOP and wait for approval.

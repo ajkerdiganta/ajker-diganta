@@ -1,0 +1,4 @@
+import { PublicFrame } from "@/components/layout/page-frame";
+import { Breadcrumbs } from "@/components/public/news-components";
+import { getSitePage, type PageSlug } from "@/lib/site-content";
+export async function EditableSitePage({ slug }: { slug: PageSlug }) { const page = await getSitePage(slug); return <PublicFrame><article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8"><Breadcrumbs items={[{ label: "প্রচ্ছদ", href: "/" }, { label: page.title }]} /><p className="text-xs font-bold text-red-brand">দৈনিক আজকের দিগন্ত</p><h1 className="mt-2 font-serif text-3xl font-bold leading-relaxed text-ink sm:text-4xl">{page.title}</h1><div className="mt-6 space-y-5 rounded-2xl border border-line bg-white p-5 text-sm leading-8 text-ink-muted sm:p-8">{page.body.split(/\n+/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></article></PublicFrame>; }

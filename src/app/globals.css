@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Noto Sans Bengali Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/noto-sans-bengali/files/noto-sans-bengali-bengali-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0951-0952,U+0964-0965,U+0980-09FE,U+1CD0,U+1CD2,U+1CD5-1CD6,U+1CD8,U+1CE1,U+1CEA,U+1CED,U+1CF2,U+1CF5-1CF7,U+200C-200D,U+20B9,U+25CC,U+A8F1;
+}
+
+@font-face {
+  font-family: "Noto Serif Bengali Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/noto-serif-bengali/files/noto-serif-bengali-bengali-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0951-0952,U+0964-0965,U+0980-09FE,U+1CD0,U+1CD2,U+1CD5-1CD6,U+1CD8,U+1CE1,U+1CEA,U+1CED,U+1CF2,U+1CF5-1CF7,U+200C-200D,U+20B9,U+25CC,U+A8F1;
+}
+
+@theme inline {
+  --color-forest: #225b43;
+  --color-forest-700: #184832;
+  --color-red-brand: #c13f33;
+  --color-red-700: #a9342b;
+  --color-paper-50: #faf9f5;
+  --color-paper-100: #f1f0e9;
+  --color-ink: #1f2b25;
+  --color-ink-muted: #68736c;
+  --color-line: #e8e7df;
+  --font-sans: "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali Variable", "Noto Serif Bengali", Georgia, serif;
+}
+
+:root {
+  color-scheme: light;
+  --background: #faf9f5;
+  --foreground: #1f2b25;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+  font-feature-settings: "kern";
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: #dce9df; color: #184832; }
+:focus-visible { outline: 2px solid #225b43; outline-offset: 3px; }
+a { text-decoration: none; }
+button, input { font: inherit; }
+.auth-input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #e1e2da;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.7rem 0.9rem;
+  color: #1f2b25;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.auth-input::placeholder { color: #a0a7a1; }
+.auth-input:focus { border-color: #225b43; box-shadow: 0 0 0 3px rgb(34 91 67 / 10%); }
+
+.cms-prose p { margin: 0.65rem 0; min-height: 1.5rem; }
+.cms-prose h2 { margin: 1.4rem 0 0.7rem; font-family: "Noto Serif Bengali Variable", serif; font-size: 1.35rem; font-weight: 700; line-height: 1.6; }
+.cms-prose h3 { margin: 1.2rem 0 0.6rem; font-family: "Noto Serif Bengali Variable", serif; font-size: 1.15rem; font-weight: 700; line-height: 1.6; }
+.cms-prose ul, .cms-prose ol { margin: 0.8rem 0; padding-inline-start: 1.6rem; }
+.cms-prose ul { list-style: disc; }
+.cms-prose ol { list-style: decimal; }
+.cms-prose li { padding-inline-start: 0.3rem; line-height: 1.9; }
+.cms-prose blockquote { margin: 1rem 0; border-inline-start: 3px solid #225b43; background: #faf9f5; padding: 0.75rem 1rem; color: #4e5d53; }
+.cms-prose a { color: #225b43; text-decoration: underline; text-underline-offset: 3px; }
+.cms-prose figure { margin: 1.25rem 0; overflow: hidden; border-radius: 0.8rem; background: #faf9f5; }
+.cms-prose figure img { display: block; max-height: 36rem; width: 100%; object-fit: contain; }
+.cms-prose figcaption { padding: 0.65rem 0.9rem; font-size: 0.78rem; line-height: 1.65; color: #68736c; }
+.cms-prose pre { overflow: auto; border-radius: 0.75rem; background: #f1f0e9; padding: 0.9rem; direction: ltr; text-align: left; }
+.cms-prose hr { margin: 1.25rem 0; border: 0; border-top: 1px solid #e8e7df; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

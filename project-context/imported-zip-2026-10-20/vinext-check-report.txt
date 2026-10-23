@@ -1,0 +1,51 @@
+
+  vinext check
+
+  Scanning project...
+
+
+  [1mvinext compatibility report[0m
+  ========================================
+
+  [1mImports[0m: 6/6 fully supported
+    [32m✓[0m  next/link [90m(26 files)[0m
+    [32m✓[0m  next/navigation [90m(32 files)[0m
+    [32m✓[0m  next/headers [90m(22 files)[0m
+    [32m✓[0m  next/image [90m(10 files)[0m [90m— local images served via /_next/image (resized when an images optimizer is configured); remote images with width and height via @unpic/react, other remote images (fill or dimensionless) as a plain <img>[0m
+    [32m✓[0m  next/server [90m(48 files)[0m [90m— NextRequest, NextResponse, NextFetchEvent, userAgent, userAgentFromString, after, connection[0m
+    [32m✓[0m  server-only [90m(5 files)[0m
+
+  [1mConfig[0m: 3/4 options supported
+    [33m~[0m  images [90m— remotePatterns, deviceSizes/imageSizes, qualities and SVG/CSP options honoured; resizing needs an optimizer via vinext({ images: { optimizer } }), images are served as-is otherwise; loader/loaderFile are ignored[0m
+    [32m✓[0m  headers
+    [32m✓[0m  allowedDevOrigins [90m— dev server cross-origin allowlist[0m
+    [32m✓[0m  poweredByHeader [90m— vinext never sends an X-Powered-By header[0m
+
+  [1mLibraries[0m: 5/5 compatible
+    [32m✓[0m  better-auth [90m— uses only public next/* APIs (headers, cookies, NextRequest/NextResponse)[0m
+    [32m✓[0m  tailwindcss
+    [32m✓[0m  lucide-react
+    [32m✓[0m  zod
+    [32m✓[0m  prisma [90m— works on Cloudflare Workers with driver adapters (D1, Hyperdrive) or Prisma Accelerate[0m
+
+  [1mProject structure[0m:
+    [32m✓[0m  App Router (src/app/)
+    [32m✓[0m  42 page(s)
+    [32m✓[0m  1 layout(s)
+    [32m✓[0m  48 route handler(s)
+
+  ----------------------------------------
+  [1mOverall[0m: [32m97% compatible[0m (18 supported, 1 partial, 0 issues)
+
+  [1mPartial support (may need attention):[0m
+    [33m~[0m  images — remotePatterns, deviceSizes/imageSizes, qualities and SVG/CSP options honoured; resizing needs an optimizer via vinext({ images: { optimizer } }), images are served as-is otherwise; loader/loaderFile are ignored
+
+  [1mRecommended next steps:[0m
+    Run [36mvinext init[0m to set up your project automatically
+
+  Or manually:
+    1. Add [36m"type": "module"[0m to package.json
+    2. Install: [36mpnpm add -D vinext vite @vitejs/plugin-react @vitejs/plugin-rsc react-server-dom-webpack[0m
+    3. Create vite.config.ts with [36mplugins: [vinext()][0m
+    4. Run: [36mnpx vite dev[0m
+

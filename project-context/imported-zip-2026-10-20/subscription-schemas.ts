@@ -1,0 +1,3 @@
+import { z } from "zod";
+export const paymentSubmissionSchema = z.object({ plan: z.enum(["MONTHLY", "YEARLY"]), method: z.enum(["NAGAD", "BKASH", "ROCKET"]), customerName: z.string().trim().min(2).max(120), phone: z.string().trim().min(7).max(40), email: z.email().max(254), address: z.string().trim().min(5).max(1000), transactionId: z.string().trim().min(3).max(120) }).strict();
+export const gatewaySettingsSchema = z.object({ method: z.enum(["NAGAD", "BKASH", "ROCKET"]), displayName: z.string().trim().min(2).max(40), accountNumber: z.string().trim().max(40), transferType: z.string().trim().min(2).max(40), instructions: z.string().trim().min(5).max(2000), isActive: z.boolean() }).strict();

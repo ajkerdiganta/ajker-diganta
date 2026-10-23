@@ -1,0 +1,1019 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RoleCode {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  REPORTER
+  VIDEO_EDITOR
+  MODERATOR
+  USER
+}
+
+enum ArticleStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VideoProvider {
+  YOUTUBE
+  CLOUDFLARE_STREAM
+}
+
+enum VideoStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NavigationMenuLocation {
+  HEADER_MAIN
+  HAMBURGER
+}
+
+enum FooterSubmissionType {
+  ADVERTISEMENT
+  NEWSLETTER
+}
+
+enum SiteSubmissionStatus {
+  RECEIVED
+  RESOLVED
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  NAGAD
+  BKASH
+  ROCKET
+}
+
+enum PaymentSubmissionStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum WorkflowAction {
+  CREATE
+  UPDATE
+  SUBMIT
+  REVIEW
+  APPROVE
+  REJECT
+  EDIT_REJECTED
+  RESUBMIT
+  SCHEDULE
+  CANCEL_SCHEDULE
+  PUBLISH
+  ARCHIVE
+}
+
+enum VideoWorkflowAction {
+  CREATE
+  UPDATE
+  SUBMIT
+  RESUBMIT
+  REVIEW
+  APPROVE
+  REJECT
+  PUBLISH
+  ARCHIVE
+}
+
+enum NotificationType {
+  BREAKING_NEWS
+  TOPIC
+  VIDEO
+  SYSTEM
+}
+
+enum NotificationPriority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+enum MediaStatus {
+  UPLOADING
+  QUARANTINED
+  VERIFIED
+  FAILED
+  DELETED
+}
+
+enum MediaVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MediaUsageRole {
+  FEATURED_IMAGE
+  INLINE
+}
+
+model user {
+  id            String     @id @default(uuid()) @db.Uuid
+  name          String
+  email         String     @unique
+  phone         String?    @db.VarChar(40)
+  emailVerified Boolean    @default(false)
+  image         String?
+  status        UserStatus @default(ACTIVE)
+  deletedAt     DateTime?  @db.Timestamptz(3)
+  createdAt     DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime   @updatedAt @db.Timestamptz(3)
+
+  sessions                   session[]
+  accounts                   account[]
+  roleAssignments            userRole[]
+  createdArticles            Article[]               @relation("ArticleCreator")
+  updatedArticles            Article[]               @relation("ArticleUpdater")
+  approvedArticles           Article[]               @relation("ArticleApprover")
+  publishedArticles          Article[]               @relation("ArticlePublisher")
+  articleRevisions           ArticleRevision[]
+  workflowEvents             ArticleWorkflowEvent[]
+  uploadedMedia              Media[]                 @relation("MediaUploader")
+  authorProfile              Author?
+  auditLogs                  AuditLog[]
+  savedArticles              SavedArticle[]
+  favouriteArticles          FavouriteArticle[]
+  followedTopics             FollowedTopic[]
+  followedCategories         FollowedCategory[]
+  readingHistory             ReadingHistory[]
+  preferences                UserPreference?
+  createdVideos              Video[]                 @relation("VideoCreator")
+  updatedVideos              Video[]                 @relation("VideoUpdater")
+  approvedVideos             Video[]                 @relation("VideoApprover")
+  publishedVideos            Video[]                 @relation("VideoPublisher")
+  videoWorkflowEvents        VideoWorkflowEvent[]
+  videoHistory               VideoHistory[]
+  notifications              Notification[]
+  emailOutbox                EmailOutbox[]
+  sitePagesUpdated           SitePage[]              @relation("SitePageUpdater")
+  siteSettingsUpdated        SiteSetting[]           @relation("SiteSettingUpdater")
+  contactSubmissionsResolved ContactSubmission[]     @relation("ContactSubmissionResolver")
+  footerSubmissionsResolved  FooterSubmission[]      @relation("FooterSubmissionResolver")
+  subscriptions              Subscription[]          @relation("Subscriber")
+  paymentSubmissions         PaymentSubmission[]     @relation("PaymentSubmitter")
+  paymentVerifications       PaymentSubmission[]     @relation("PaymentVerifier")
+  paymentGatewaySettings     PaymentGatewaySetting[] @relation("PaymentGatewayUpdater")
+
+  @@index([status, createdAt])
+  @@index([deletedAt, status, createdAt])
+}
+
+model session {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime @db.Timestamptz(3)
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+  scope                 String?
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String   @db.Text
+  expiresAt  DateTime @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([identifier])
+}
+
+model rateLimit {
+  id          String @id @default(uuid()) @db.Uuid
+  key         String @unique
+  count       Int    @default(0)
+  lastRequest BigInt
+}
+
+model role {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        RoleCode         @unique
+  name        String
+  description String?
+  assignments userRole[]
+  permissions rolePermission[]
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+}
+
+model permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique
+  description String?
+  roles       rolePermission[]
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+}
+
+model userRole {
+  userId     String   @db.Uuid
+  roleId     String   @db.Uuid
+  assignedAt DateTime @default(now()) @db.Timestamptz(3)
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@index([roleId, userId])
+}
+
+model rolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId, roleId])
+}
+
+model Category {
+  id             String    @id @default(uuid()) @db.Uuid
+  slug           String    @unique
+  name           String
+  description    String?   @db.Text
+  parentId       String?   @db.Uuid
+  sortOrder      Int       @default(0)
+  isActive       Boolean   @default(true)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt      DateTime? @db.Timestamptz(3)
+
+  parent          Category?            @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Category[]           @relation("CategoryTree")
+  articles        ArticleCategory[]
+  videos          Video[]
+  followers       FollowedCategory[]
+  navigationItems NavigationMenuItem[]
+
+  @@index([parentId, sortOrder])
+  @@index([isActive, deletedAt, sortOrder])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "categories_search_name_trgm_idx")
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, map: "categories_search_description_trgm_idx")
+}
+
+model Tag {
+  id             String          @id @default(uuid()) @db.Uuid
+  slug           String          @unique
+  name           String
+  normalizedName String          @unique
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+  deletedAt      DateTime?       @db.Timestamptz(3)
+  articles       ArticleTag[]
+  videos         VideoTag[]
+  followers      FollowedTopic[]
+
+  @@index([deletedAt, name])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "tags_search_name_trgm_idx")
+}
+
+model Author {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String?   @unique @db.Uuid
+  slug      String    @unique
+  name      String
+  title     String?
+  bio       String?   @db.Text
+  email     String?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  user     user?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  articles ArticleAuthor[]
+  videos   Video[]
+
+  @@index([isActive, deletedAt, name])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "authors_search_name_trgm_idx")
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "authors_search_title_trgm_idx")
+  @@index([bio(ops: raw("gin_trgm_ops"))], type: Gin, map: "authors_search_bio_trgm_idx")
+}
+
+model Media {
+  id           String          @id @default(uuid()) @db.Uuid
+  provider     String          @default("R2")
+  bucket       String
+  objectKey    String          @unique
+  originalName String
+  mimeType     String
+  sizeBytes    BigInt
+  checksum     String?
+  width        Int?
+  height       Int?
+  altText      String?
+  caption      String?
+  credit       String?
+  status       MediaStatus     @default(UPLOADING)
+  visibility   MediaVisibility @default(PRIVATE)
+  uploadedById String          @db.Uuid
+  createdAt    DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime        @updatedAt @db.Timestamptz(3)
+  deletedAt    DateTime?       @db.Timestamptz(3)
+
+  uploadedBy user           @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  articles   ArticleMedia[]
+
+  @@index([status, visibility, createdAt])
+  @@index([uploadedById, createdAt])
+}
+
+model Article {
+  id                      String        @id @default(uuid()) @db.Uuid
+  slug                    String        @unique
+  title                   String
+  subtitle                String?
+  excerpt                 String?       @db.Text
+  body                    Json
+  bodyHtml                String        @db.Text
+  status                  ArticleStatus @default(DRAFT)
+  seoTitle                String?
+  seoDescription          String?       @db.VarChar(170)
+  canonicalUrl            String?
+  isBreaking              Boolean       @default(false)
+  breakingUntil           DateTime?     @db.Timestamptz(3)
+  isFeatured              Boolean       @default(false)
+  featuredUntil           DateTime?     @db.Timestamptz(3)
+  isTrending              Boolean       @default(false)
+  trendingUntil           DateTime?     @db.Timestamptz(3)
+  revisionNumber          Int           @default(1)
+  approvedRevisionNumber  Int?
+  publishedRevisionNumber Int?
+  scheduledAt             DateTime?     @db.Timestamptz(3)
+  publishedAt             DateTime?     @db.Timestamptz(3)
+  archivedAt              DateTime?     @db.Timestamptz(3)
+  createdById             String        @db.Uuid
+  updatedById             String        @db.Uuid
+  approvedById            String?       @db.Uuid
+  publishedById           String?       @db.Uuid
+  createdAt               DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime      @updatedAt @db.Timestamptz(3)
+  deletedAt               DateTime?     @db.Timestamptz(3)
+
+  createdBy       user                   @relation("ArticleCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy       user                   @relation("ArticleUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  approvedBy      user?                  @relation("ArticleApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  publishedBy     user?                  @relation("ArticlePublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+  categories      ArticleCategory[]
+  authors         ArticleAuthor[]
+  tags            ArticleTag[]
+  media           ArticleMedia[]
+  revisions       ArticleRevision[]
+  workflowEvents  ArticleWorkflowEvent[]
+  relatedArticles RelatedArticle[]       @relation("RelatedFrom")
+  relatedFrom     RelatedArticle[]       @relation("RelatedTo")
+  relatedVideos   ArticleRelatedVideo[]
+  slugRedirects   ArticleSlugRedirect[]
+  dailyMetrics    ArticleDailyMetric[]
+  savedBy         SavedArticle[]
+  favouritedBy    FavouriteArticle[]
+  readingHistory  ReadingHistory[]
+  relatedByVideos VideoRelatedArticle[]
+
+  @@index([status, publishedAt, id])
+  @@index([createdById, status, updatedAt])
+  @@index([status, scheduledAt])
+  @@index([status, approvedRevisionNumber, scheduledAt])
+  @@index([isBreaking, breakingUntil, publishedAt])
+  @@index([isFeatured, featuredUntil, publishedAt])
+  @@index([isTrending, trendingUntil, publishedAt])
+  @@index([deletedAt, updatedAt])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "articles_search_title_trgm_idx")
+  @@index([subtitle(ops: raw("gin_trgm_ops"))], type: Gin, map: "articles_search_subtitle_trgm_idx")
+  @@index([excerpt(ops: raw("gin_trgm_ops"))], type: Gin, map: "articles_search_excerpt_trgm_idx")
+  @@index([bodyHtml(ops: raw("gin_trgm_ops"))], type: Gin, map: "articles_search_body_html_trgm_idx")
+}
+
+model ArticleDailyMetric {
+  articleId  String   @db.Uuid
+  metricDate DateTime @db.Date
+  views      BigInt   @default(0)
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, metricDate])
+  @@index([metricDate, views])
+}
+
+model ArticleRevision {
+  id             String   @id @default(uuid()) @db.Uuid
+  articleId      String   @db.Uuid
+  version        Int
+  title          String
+  subtitle       String?
+  excerpt        String?  @db.Text
+  body           Json
+  bodyHtml       String   @db.Text
+  seoTitle       String?
+  seoDescription String?
+  canonicalUrl   String?
+  snapshot       Json
+  changeNote     String?
+  createdById    String   @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdBy user    @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([articleId, version])
+  @@index([articleId, createdAt])
+}
+
+model ArticleWorkflowEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  articleId  String         @db.Uuid
+  fromStatus ArticleStatus?
+  toStatus   ArticleStatus
+  action     WorkflowAction
+  actorId    String         @db.Uuid
+  reason     String?
+  metadata   Json?
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  actor   user    @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([articleId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model ArticleCategory {
+  articleId  String   @db.Uuid
+  categoryId String   @db.Uuid
+  isPrimary  Boolean  @default(false)
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([articleId, categoryId])
+  @@index([categoryId, articleId])
+}
+
+model ArticleAuthor {
+  articleId String  @db.Uuid
+  authorId  String  @db.Uuid
+  isPrimary Boolean @default(false)
+  position  Int     @default(0)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author    Author  @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@id([articleId, authorId])
+  @@index([authorId, articleId])
+}
+
+model ArticleTag {
+  articleId String  @db.Uuid
+  tagId     String  @db.Uuid
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@id([articleId, tagId])
+  @@index([tagId, articleId])
+}
+
+model ArticleMedia {
+  articleId   String         @db.Uuid
+  mediaId     String         @db.Uuid
+  role        MediaUsageRole
+  position    Int            @default(0)
+  altOverride String?
+  article     Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  media       Media          @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@id([articleId, mediaId, role])
+  @@index([mediaId, role])
+}
+
+model RelatedArticle {
+  articleId        String  @db.Uuid
+  relatedArticleId String  @db.Uuid
+  position         Int     @default(0)
+  article          Article @relation("RelatedFrom", fields: [articleId], references: [id], onDelete: Cascade)
+  relatedArticle   Article @relation("RelatedTo", fields: [relatedArticleId], references: [id], onDelete: Restrict)
+
+  @@id([articleId, relatedArticleId])
+  @@index([relatedArticleId, articleId])
+}
+
+model ArticleRelatedVideo {
+  id           String   @id @default(uuid()) @db.Uuid
+  articleId    String   @db.Uuid
+  title        String
+  provider     String
+  externalId   String
+  canonicalUrl String
+  position     Int      @default(0)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  article      Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, provider, externalId])
+  @@index([articleId, position])
+}
+
+model Video {
+  id                      String        @id @default(uuid()) @db.Uuid
+  slug                    String        @unique
+  title                   String
+  description             String        @db.Text
+  thumbnailUrl            String?
+  provider                VideoProvider @default(YOUTUBE)
+  videoUrl                String
+  externalId              String
+  durationSeconds         Int?
+  status                  VideoStatus   @default(DRAFT)
+  seoTitle                String?
+  seoDescription          String?       @db.VarChar(170)
+  revisionNumber          Int           @default(1)
+  approvedRevisionNumber  Int?
+  publishedRevisionNumber Int?
+  viewCount               BigInt        @default(0)
+  publishedAt             DateTime?     @db.Timestamptz(3)
+  categoryId              String        @db.Uuid
+  authorId                String        @db.Uuid
+  createdById             String        @db.Uuid
+  updatedById             String        @db.Uuid
+  approvedById            String?       @db.Uuid
+  publishedById           String?       @db.Uuid
+  createdAt               DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime      @updatedAt @db.Timestamptz(3)
+  deletedAt               DateTime?     @db.Timestamptz(3)
+
+  category        Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author          Author                @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  createdBy       user                  @relation("VideoCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy       user                  @relation("VideoUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  approvedBy      user?                 @relation("VideoApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  publishedBy     user?                 @relation("VideoPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+  tags            VideoTag[]
+  relatedArticles VideoRelatedArticle[]
+  workflowEvents  VideoWorkflowEvent[]
+  dailyMetrics    VideoDailyMetric[]
+  viewerHistory   VideoHistory[]
+
+  @@unique([provider, externalId])
+  @@index([status, publishedAt, id])
+  @@index([categoryId, status, publishedAt])
+  @@index([authorId, status, publishedAt])
+  @@index([createdById, status, updatedAt])
+  @@index([deletedAt, updatedAt])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "videos_search_title_trgm_idx")
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, map: "videos_search_description_trgm_idx")
+}
+
+model VideoTag {
+  videoId String @db.Uuid
+  tagId   String @db.Uuid
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@id([videoId, tagId])
+  @@index([tagId, videoId])
+  @@map("video_tags")
+}
+
+model VideoRelatedArticle {
+  videoId          String  @db.Uuid
+  relatedArticleId String  @db.Uuid
+  position         Int     @default(0)
+  video            Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  relatedArticle   Article @relation(fields: [relatedArticleId], references: [id], onDelete: Restrict)
+
+  @@id([videoId, relatedArticleId])
+  @@index([relatedArticleId, videoId])
+  @@map("video_related_articles")
+}
+
+model VideoWorkflowEvent {
+  id         String              @id @default(uuid()) @db.Uuid
+  videoId    String              @db.Uuid
+  fromStatus VideoStatus?
+  toStatus   VideoStatus
+  action     VideoWorkflowAction
+  actorId    String              @db.Uuid
+  reason     String?
+  metadata   Json?
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  video      Video               @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  actor      user                @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([videoId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model VideoDailyMetric {
+  videoId    String   @db.Uuid
+  metricDate DateTime @db.Date
+  views      BigInt   @default(0)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, metricDate])
+  @@index([metricDate, views])
+  @@map("video_daily_metrics")
+}
+
+model VideoHistory {
+  userId       String   @db.Uuid
+  videoId      String   @db.Uuid
+  lastViewedAt DateTime @default(now()) @db.Timestamptz(3)
+  viewCount    Int      @default(1)
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([userId, videoId])
+  @@index([userId, lastViewedAt])
+  @@index([videoId, lastViewedAt])
+  @@map("video_history")
+}
+
+model ArticleSlugRedirect {
+  id        String   @id @default(uuid()) @db.Uuid
+  articleId String   @db.Uuid
+  oldSlug   String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Restrict)
+
+  @@index([articleId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String?  @db.Uuid
+  action       String
+  resourceType String
+  resourceId   String?
+  requestId    String?
+  metadata     Json?
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  actor        user?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([resourceType, resourceId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model SavedArticle {
+  userId    String   @db.Uuid
+  articleId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+  @@index([articleId, userId])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("saved_articles")
+}
+
+model FavouriteArticle {
+  userId    String   @db.Uuid
+  articleId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+  @@index([articleId, userId])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("favourite_articles")
+}
+
+model FollowedTopic {
+  userId    String   @db.Uuid
+  tagId     String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic     Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+  @@index([tagId, userId])
+  @@index([userId, createdAt])
+  @@map("followed_topics")
+}
+
+model FollowedCategory {
+  userId     String   @db.Uuid
+  categoryId String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([userId, categoryId])
+  @@index([categoryId, userId])
+  @@index([userId, createdAt])
+  @@map("followed_categories")
+}
+
+model ReadingHistory {
+  userId     String   @db.Uuid
+  articleId  String   @db.Uuid
+  lastReadAt DateTime @default(now()) @db.Timestamptz(3)
+  readCount  Int      @default(1)
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+  @@index([userId, lastReadAt])
+  @@index([articleId, lastReadAt])
+  @@map("reading_history")
+}
+
+model UserPreference {
+  userId                String   @id @db.Uuid
+  fontScale             String   @default("comfortable") @db.VarChar(16)
+  lowBandwidthMode      Boolean  @default(false)
+  readingHistoryEnabled Boolean  @default(true)
+  inAppBreakingEnabled  Boolean  @default(true)
+  emailBreakingEnabled  Boolean  @default(false)
+  inAppTopicEnabled     Boolean  @default(true)
+  emailTopicEnabled     Boolean  @default(false)
+  inAppVideoEnabled     Boolean  @default(false)
+  emailVideoEnabled     Boolean  @default(false)
+  inAppSystemEnabled    Boolean  @default(true)
+  emailSystemEnabled    Boolean  @default(false)
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(3)
+  user                  user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Notification {
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @db.Uuid
+  type        NotificationType
+  priority    NotificationPriority @default(NORMAL)
+  templateKey String               @db.VarChar(80)
+  payload     Json
+  href        String?              @db.VarChar(500)
+  dedupeKey   String               @db.VarChar(250)
+  readAt      DateTime?            @db.Timestamptz(3)
+  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
+  user        user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([type, createdAt])
+  @@map("notifications")
+}
+
+model EmailOutbox {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @db.Uuid
+  dedupeKey   String            @db.VarChar(250)
+  templateKey String            @db.VarChar(80)
+  payload     Json
+  locale      String            @default("bn-BD") @db.VarChar(16)
+  status      EmailOutboxStatus @default(PENDING)
+  attempts    Int               @default(0)
+  availableAt DateTime          @default(now()) @db.Timestamptz(3)
+  claimedAt   DateTime?         @db.Timestamptz(3)
+  sentAt      DateTime?         @db.Timestamptz(3)
+  lastError   String?           @db.Text
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
+  user        user              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([status, availableAt, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("email_outbox")
+}
+
+model NavigationMenu {
+  id        String                 @id @default(uuid()) @db.Uuid
+  name      String                 @db.VarChar(100)
+  slug      String                 @unique @db.VarChar(80)
+  location  NavigationMenuLocation
+  isActive  Boolean                @default(true)
+  createdAt DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime               @updatedAt @db.Timestamptz(3)
+  items     NavigationMenuItem[]
+
+  @@index([location, isActive])
+  @@map("navigation_menus")
+}
+
+model NavigationMenuItem {
+  id         String               @id @default(uuid()) @db.Uuid
+  menuId     String               @db.Uuid
+  parentId   String?              @db.Uuid
+  categoryId String?              @db.Uuid
+  label      String               @db.VarChar(100)
+  href       String               @db.VarChar(2048)
+  sortOrder  Int                  @default(0)
+  isActive   Boolean              @default(true)
+  createdAt  DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime             @updatedAt @db.Timestamptz(3)
+  menu       NavigationMenu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent     NavigationMenuItem?  @relation("NavigationMenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children   NavigationMenuItem[] @relation("NavigationMenuTree")
+  category   Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([menuId, isActive, parentId, sortOrder])
+  @@index([categoryId])
+  @@map("navigation_menu_items")
+}
+
+model SitePage {
+  id              String   @id @default(uuid()) @db.Uuid
+  slug            String   @unique @db.VarChar(80)
+  title           String   @db.VarChar(180)
+  body            String   @db.Text
+  metaTitle       String?  @db.VarChar(120)
+  metaDescription String?  @db.VarChar(170)
+  updatedById     String?  @db.Uuid
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+  updatedBy       user?    @relation("SitePageUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedAt])
+  @@map("site_pages")
+}
+
+model SiteSetting {
+  id                    String   @id @default("global") @db.VarChar(32)
+  officeAddress         String?  @db.Text
+  officePhone           String?  @db.VarChar(40)
+  contactRecipientEmail String?  @db.VarChar(254)
+  publisherName         String?  @db.VarChar(180)
+  editorName            String?  @db.VarChar(180)
+  companyLinks          Json?
+  socialLinks           Json?
+  googlePlayUrl         String?  @db.VarChar(2048)
+  appStoreUrl           String?  @db.VarChar(2048)
+  updatedById           String?  @db.Uuid
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(3)
+  updatedBy             user?    @relation("SiteSettingUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@map("site_settings")
+}
+
+model ContactSubmission {
+  id           String               @id @default(uuid()) @db.Uuid
+  name         String               @db.VarChar(120)
+  email        String               @db.VarChar(254)
+  subject      String               @db.VarChar(180)
+  message      String               @db.Text
+  phone        String?              @db.VarChar(40)
+  status       SiteSubmissionStatus @default(RECEIVED)
+  createdAt    DateTime             @default(now()) @db.Timestamptz(3)
+  resolvedAt   DateTime?            @db.Timestamptz(3)
+  resolvedById String?              @db.Uuid
+  resolvedBy   user?                @relation("ContactSubmissionResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@map("contact_submissions")
+}
+
+model FooterSubmission {
+  id           String               @id @default(uuid()) @db.Uuid
+  type         FooterSubmissionType
+  name         String?              @db.VarChar(120)
+  email        String               @db.VarChar(254)
+  phone        String               @db.VarChar(40)
+  subject      String?              @db.VarChar(180)
+  message      String               @db.Text
+  consentAt    DateTime?            @db.Timestamptz(3)
+  status       SiteSubmissionStatus @default(RECEIVED)
+  createdAt    DateTime             @default(now()) @db.Timestamptz(3)
+  resolvedAt   DateTime?            @db.Timestamptz(3)
+  resolvedById String?              @db.Uuid
+  resolvedBy   user?                @relation("FooterSubmissionResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([type, status, createdAt])
+  @@index([email, createdAt])
+  @@map("footer_submissions")
+}
+
+model Subscription {
+  id                String             @id @default(uuid()) @db.Uuid
+  userId            String             @db.Uuid
+  plan              SubscriptionPlan
+  amountBdt         Int
+  status            SubscriptionStatus @default(PENDING)
+  startedAt         DateTime?          @db.Timestamptz(3)
+  expiresAt         DateTime?          @db.Timestamptz(3)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+  user              user               @relation("Subscriber", fields: [userId], references: [id], onDelete: Cascade)
+  paymentSubmission PaymentSubmission?
+
+  @@index([userId, status, expiresAt])
+  @@index([status, createdAt])
+  @@map("subscriptions")
+}
+
+model PaymentGatewaySetting {
+  method        PaymentMethod @id
+  displayName   String        @db.VarChar(40)
+  accountNumber String        @default("") @db.VarChar(40)
+  transferType  String        @db.VarChar(40)
+  instructions  String        @db.VarChar(2000)
+  isActive      Boolean       @default(false)
+  updatedById   String?       @db.Uuid
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  updatedBy     user?         @relation("PaymentGatewayUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@map("payment_gateway_settings")
+}
+
+model PaymentSubmission {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  userId                 String                  @db.Uuid
+  subscriptionId         String                  @unique @db.Uuid
+  method                 PaymentMethod
+  amountBdt              Int
+  customerNameEncrypted  String                  @db.Text
+  phoneEncrypted         String                  @db.Text
+  emailEncrypted         String                  @db.Text
+  addressEncrypted       String                  @db.Text
+  transactionIdEncrypted String                  @db.Text
+  transactionIdHash      String                  @db.Char(64)
+  status                 PaymentSubmissionStatus @default(PENDING)
+  expiresAt              DateTime                @db.Timestamptz(3)
+  verifiedAt             DateTime?               @db.Timestamptz(3)
+  verifiedById           String?                 @db.Uuid
+  createdAt              DateTime                @default(now()) @db.Timestamptz(3)
+  user                   user                    @relation("PaymentSubmitter", fields: [userId], references: [id], onDelete: Cascade)
+  subscription           Subscription            @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  verifiedBy             user?                   @relation("PaymentVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@unique([method, transactionIdHash])
+  @@index([userId, status, expiresAt])
+  @@index([status, createdAt])
+  @@map("payment_submissions")
+}

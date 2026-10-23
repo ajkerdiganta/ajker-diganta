@@ -1,0 +1,133 @@
+{
+  "routes": [
+    {
+      "path": "/"
+    },
+    {
+      "path": "/about"
+    },
+    {
+      "path": "/advertising"
+    },
+    {
+      "path": "/admin"
+    },
+    {
+      "path": "/admin/analytics"
+    },
+    {
+      "path": "/admin/audit"
+    },
+    {
+      "path": "/admin/articles"
+    },
+    {
+      "path": "/admin/articles/:id"
+    },
+    {
+      "path": "/admin/articles/new"
+    },
+    {
+      "path": "/admin/authors"
+    },
+    {
+      "path": "/admin/categories"
+    },
+    {
+      "path": "/admin/media"
+    },
+    {
+      "path": "/admin/navigation"
+    },
+    {
+      "path": "/admin/site-content"
+    },
+    {
+      "path": "/admin/submissions"
+    },
+    {
+      "path": "/admin/subscriptions"
+    },
+    {
+      "path": "/admin/users"
+    },
+    {
+      "path": "/admin/review"
+    },
+    {
+      "path": "/admin/scheduled"
+    },
+    {
+      "path": "/admin/videos"
+    },
+    {
+      "path": "/admin/videos/:id"
+    },
+    {
+      "path": "/admin/videos/new"
+    },
+    {
+      "path": "/author/:slug"
+    },
+    {
+      "path": "/category/:slug"
+    },
+    {
+      "path": "/contact"
+    },
+    {
+      "path": "/dashboard"
+    },
+    {
+      "path": "/d/a/d/my/staff"
+    },
+    {
+      "path": "/dainik/ajker/diganta/s/a/boss"
+    },
+    {
+      "path": "/forbidden"
+    },
+    {
+      "path": "/forgot-password"
+    },
+    {
+      "path": "/latest"
+    },
+    {
+      "path": "/login"
+    },
+    {
+      "path": "/news/:slug"
+    },
+    {
+      "path": "/newsletter"
+    },
+    {
+      "path": "/notifications"
+    },
+    {
+      "path": "/privacy"
+    },
+    {
+      "path": "/register"
+    },
+    {
+      "path": "/reset-password"
+    },
+    {
+      "path": "/subscribe"
+    },
+    {
+      "path": "/search"
+    },
+    {
+      "path": "/terms"
+    },
+    {
+      "path": "/video"
+    },
+    {
+      "path": "/video/:slug"
+    }
+  ]
+}
