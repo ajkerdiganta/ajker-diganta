@@ -13,10 +13,28 @@ const securityHeaders = [
   },
 ];
 
+const previewHost = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL).hostname : "";
+const allowedDevOrigins = [
+  "127.0.0.1",
+  "localhost",
+  "manus-addon-webdev.manus.im",
+  "3000-iasdqunpywz4p7xbfa4wx-56904385.us5.manus.computer",
+  previewHost,
+].filter(Boolean);
+const allowedServerActionOrigins = [
+  "127.0.0.1:3000",
+  "localhost:3000",
+  "manus-addon-webdev.manus.im",
+  previewHost,
+].filter(Boolean);
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
-  allowedDevOrigins: ["127.0.0.1", "localhost", "3000-iasdqunpywz4p7xbfa4wx-56904385.us5.manus.computer"],
+  allowedDevOrigins,
+  experimental: {
+    serverActions: { allowedOrigins: allowedServerActionOrigins },
+  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**", search: "" }],
     qualities: [70, 75],
