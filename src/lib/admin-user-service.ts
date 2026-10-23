@@ -34,7 +34,10 @@ export async function provisionManagedUser(input: {
   try {
     const requestHeaders = new Headers({
       "content-type": "application/json",
-      origin: input.origin ?? env.BETTER_AUTH_URL,
+      // This is an internal server-to-server Better Auth request. In embedded
+      // Preview, the incoming browser Origin can be the host iframe rather
+      // than the application's canonical origin, which Better Auth must trust.
+      origin: env.BETTER_AUTH_URL,
     });
     if (input.clientIp) requestHeaders.set("x-real-ip", input.clientIp);
     const response = await auth.handler(new Request(new URL("/api/auth/sign-up/email", env.BETTER_AUTH_URL), {
