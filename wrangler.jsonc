@@ -1,55 +1,27 @@
-
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "ajker-diganta",
-  "main": ".open-next/worker.js",
-  "upload_source_maps": true,
-  "compatibility_date": "2026-10-23",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-
-  "observability": {
-    "enabled": true
-  },
-
-  "vars": {
-    "ADDITIONAL_TRUSTED_ORIGINS": "https://www.dainikajkerdiganta.com",
-    "DATABASE_CONNECTION_TIMEOUT_MS": "5000",
-    "DATABASE_IDLE_TIMEOUT_MS": "10000",
-    "DATABASE_POOL_MAX": "5",
-    "DATABASE_STATEMENT_TIMEOUT_MS": "30000",
-    "EMAIL_FROM": "দৈনিক আজকের দিগন্ত <notification@dainikajkerdiganta.com>",
-    "EMAIL_NOTIFICATIONS_ENABLED": "false",
-    "MEDIA_MAX_BYTES": "10485760",
-    "NODE_ENV": "production",
-    "PUBLIC_SITE_URL": "https://dainikajkerdiganta.com",
-    "R2_BUCKET": "ajker-diganta-media",
-    "R2_ENDPOINT": "https://15107dd7a21a34dfca7efb908bcb3cb2.r2.cloudflarestorage.com",
-    "R2_NATIVE_BINDING": "true",
-    "R2_PUBLIC_BASE_URL": "https://pub-936bcf8599384fd2b50fdfca572773f8.r2.dev"
-  },
-
-  "hyperdrive": [
-    {
-      "binding": "ajker-diganta",
-      "id": "fb2cd769754a4cfc96102585e26ee5e9"
-    },
-    {
-      "binding": "HYPERDRIVE",
-      "id": "fb2cd769754a4cfc96102585e26ee5e9"
-    }
-  ],
-
-  "r2_buckets": [
-    {
-      "binding": "MEDIA_BUCKET",
-      "bucket_name": "ajker-diganta-media"
-    }
-  ]
+ // ...
+ "vars": {
+ "ADDITIONAL_TRUSTED_ORIGINS": "https://www.dainikajkerdiganta.com",
+ "API_KEY": "cfut_DU1CQgj3BUAedYAC3Jvylpyf5chsAvKcsjec4EPV87ef6c7a",
+ "CLOUDFLARE_API_TOKEN": "cfat_bUDrYHslWMhOuZXnwfboPWmaLGhkClvXrfvBRnAt5a03d9db",
+ "DATABASE_CONNECTION_TIMEOUT_MS": "5000",
+ "DATABASE_IDLE_TIMEOUT_MS": "10000",
+ "DATABASE_POOL_MAX": "5",
+ "DATABASE_STATEMENT_TIMEOUT_MS": "30000",
+ "EMAIL_FROM": "দৈনিক আজকের দিগন্ত <notification@dainikajkerdiganta.com>",
+ "EMAIL_NOTIFICATIONS_ENABLED": "false",
+ "MEDIA_MAX_BYTES": "10485760",
+ "MIGRATION_DATABASE_URL": "postgresql://migration_role:replace-me@staging-db.example:5432/ajker_diganta?sslmode=require",
+ "NODE_ENV": "production",
+ "PUBLIC_SITE_URL": "https://dainikajkerdiganta.com",
+ "R2_BUCKET": "ajker-diganta-media",
+ "R2_ENDPOINT": "https://15107dd7a21a34dfca7efb908bcb3cb2.r2.cloudflarestorage.com",
+ "R2_NATIVE_BINDING": "true",
+ "R2_PUBLIC_BASE_URL": "https://pub-936bcf8599384fd2b50fdfca572773f8.r2.dev",
+ "R2_SECRET_ACCESS_KEY": "39696d0861efd5f8f3d1d080f41a0a7e722aa2c26aac5ffe6a3b6ba316d08eee",
+ "RESEND_API_KEY": "re_cqKfK9jH_6QSby9oDzwzYCfQGhcevGQgo",
+ "SHADOW_DATABASE_URL": "postgresql://ajker_diganta_app:replace-me@localhost:5432/ajker_diganta_shadow?schema=public",
+ "TEST_DATABASE_URL": "postgresql://ajker_diganta_app:replace-me@localhost:5432/ajker_diganta_test?schema=public"
+ },
+ // ...
 }
