@@ -1,19 +1,21 @@
+
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ajker-diganta",
   "main": ".open-next/worker.js",
   "upload_source_maps": true,
-  "compatibility_date": "2026-10-23", // Note: Double check this date, it's in the future
+  "compatibility_date": "2026-10-23",
   "compatibility_flags": ["nodejs_compat"],
+
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+
   "observability": {
     "enabled": true
   },
-  
-  // Non-sensitive configuration variables
+
   "vars": {
     "ADDITIONAL_TRUSTED_ORIGINS": "https://www.dainikajkerdiganta.com",
     "DATABASE_CONNECTION_TIMEOUT_MS": "5000",
@@ -29,16 +31,8 @@
     "R2_ENDPOINT": "https://15107dd7a21a34dfca7efb908bcb3cb2.r2.cloudflarestorage.com",
     "R2_NATIVE_BINDING": "true",
     "R2_PUBLIC_BASE_URL": "https://pub-936bcf8599384fd2b50fdfca572773f8.r2.dev"
-    
-    // ❌ REMOVED SECRETS (Add these via `wrangler secret put`):
-    // "MIGRATION_DATABASE_URL": "...",
-    // "SHADOW_DATABASE_URL": "...",
-    // "TEST_DATABASE_URL": "...",
-    // "R2_SECRET_ACCESS_KEY": "...",
-    // "RESEND_API_KEY": "..."
   },
 
-  // Database Connection Pooling
   "hyperdrive": [
     {
       "binding": "ajker-diganta",
@@ -49,8 +43,7 @@
       "id": "fb2cd769754a4cfc96102585e26ee5e9"
     }
   ],
-  
-  // Storage Buckets
+
   "r2_buckets": [
     {
       "binding": "MEDIA_BUCKET",
