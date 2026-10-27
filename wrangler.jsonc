@@ -38,3 +38,23 @@
  },
  // ...
 }
+{
+  // ...
+  "hyperdrive": [
+    {
+      "binding": "ajker-diganta",
+      "id": "fb2cd769754a4cfc96102585e26ee5e9"
+    },
+    {
+      "binding": "HYPERDRIVE",
+      "id": "fb2cd769754a4cfc96102585e26ee5e9"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "ajker-diganta-media"
+    }
+  ],
+  // ...
+}
