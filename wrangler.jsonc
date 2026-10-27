@@ -40,7 +40,10 @@
 
   // Database Connection Pooling
   "hyperdrive": [
-    
+      {
+      "binding": "ajker-diganta",
+      "id": "fb2cd769754a4cfc96102585e26ee5e9"
+    },
     {
       "binding": "HYPERDRIVE",
       "id": "fb2cd769754a4cfc96102585e26ee5e9"
