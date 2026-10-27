@@ -1,5 +1,22 @@
 {
- // ...
+"$schema": "./node_modules/wrangler/config-schema.json",
+"name": "ajker-diganta",
+"main": ".open-next/worker.js",
+"upload_source_maps": true,
+"compatibility_date": "2026-10-23",
+"compatibility_flags": [
+"nodejs_compat"
+],
+
+"assets": {
+"directory": ".open-next/assets",
+"binding": "ASSETS"
+},
+
+"observability": {
+"enabled": true
+},
+
  "vars": {
  "ADDITIONAL_TRUSTED_ORIGINS": "https://www.dainikajkerdiganta.com",
  "API_KEY": "cfut_DU1CQgj3BUAedYAC3Jvylpyf5chsAvKcsjec4EPV87ef6c7a",
@@ -24,4 +41,22 @@
  "TEST_DATABASE_URL": "postgresql://ajker_diganta_app:replace-me@localhost:5432/ajker_diganta_test?schema=public"
  },
  // ...
+
+"hyperdrive": [
+{
+"binding": "ajker-diganta",
+"id": "fb2cd769754a4cfc96102585e26ee5e9"
+},
+{
+"binding": "HYPERDRIVE",
+"id": "fb2cd769754a4cfc96102585e26ee5e9"
+}
+ ],
+
+"r2_buckets": [
+{
+"binding": "MEDIA_BUCKET",
+"bucket_name": "ajker-diganta-media"
+}
+ ]
 }
