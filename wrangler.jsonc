@@ -51,13 +51,6 @@
 "id": "fb2cd769754a4cfc96102585e26ee5e9"
 }
  ],
-
-  // Add this to your wrangler.jsonc
-  "hyperdrive": [
-    {
-      "binding": "HYPERDRIVE",
-      "id": "fb2cd769754a4cfc96102585e26ee5e9",
-      
       // Optional. Can be used to connect to a local database for local development with `wrangler dev`
       "localConnectionString": "<LOCAL_CONNECTION_STRING_FOR_LOCAL_DEVELOPMENT_HERE>"
     }
